@@ -11,7 +11,7 @@
 // 方向は 上:0 左:1 下:2 右:3 で指定
 #define START_DIR 0
 
-#define GOAL_X 1
+#define GOAL_X 2
 #define GOAL_Y 0
 #define GOAL_W 1
 #define GOAL_H 1

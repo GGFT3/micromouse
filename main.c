@@ -105,7 +105,7 @@ uint8_t sensor_get(void){
 	
 	bool wall_r = sensor_distance_R < 90;
 	bool wall_l = sensor_distance_L < 90;
-	bool wall_f = sensor_distance_AVE_LF_RF < 50;
+	bool wall_f = sensor_distance_AVE_LF_RF < 55;
 	
 	uint8_t x = 0;
 	
@@ -150,6 +150,8 @@ volatile long int prefer_turn_left  = 0;
 
 volatile int error_turn_right;
 volatile int error_turn_left;
+volatile int sum_error_R;
+volatile int sum_error_L;
 
 volatile char hips_flag = 0;
 
@@ -253,15 +255,15 @@ void forward(void)
 {
 	//速度の誤差にかけるゲイン
 	const float Kp_velocity_right = 0.07;
-	const float Kp_velocity_left  = 0.085;
+	const float Kp_velocity_left  = 0.091;
 	
 	//左右の移動量の誤差にかけるゲイン
 	const float Kp_movement_right = 0.26;
 	const float Kp_movement_left  = 0.26;
 	
 	//目標パルス速度
-	const int preferrance_pluse_velocity_right = 1600;
-	const int preferrance_pluse_velocity_left  = 1600;
+	const int preferrance_pluse_velocity_right = 1100;
+	const int preferrance_pluse_velocity_left  = 1100;
 	
 	//目標パルス速度と現在のパルス速度の誤差
 	float error_velocity_left;
@@ -308,8 +310,10 @@ void speed_down(void)
 
 void turn_right(void)
 {	
-	const float Kp_turn_right = 0.55;
-	const float Kp_turn_left  = 0.57;
+	const float Kp_turn_right = 0.46;
+	const float Kp_turn_left  = 0.59;
+	const float Ki_turn_right = 0;
+	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -318,7 +322,8 @@ void turn_right(void)
 	
 	int P_control_turn_right;
 	int P_control_turn_left;
-	
+	int I_control_turn_right;
+	int I_control_turn_left;
 	int D_control_turn_right;
 	int D_control_turn_left;
 	
@@ -334,14 +339,18 @@ void turn_right(void)
 	error_turn_right = prefer_turn_right - Right_RotaryEncorder_val;
 	error_turn_left  = prefer_turn_left  - Left_RotaryEncorder_val;
 	
+	sum_error_R += error_turn_right;
+	sum_error_L += error_turn_left;
+	
 	P_control_turn_right = (int)(Kp_turn_right * error_turn_right);
 	P_control_turn_left  = (int)(Kp_turn_left  * error_turn_left);
-	
+	I_control_turn_right = (int)(Ki_turn_right * sum_error_R);
+	I_control_turn_left  = (int)(Ki_turn_left  * sum_error_L);
 	D_control_turn_right = (int)(Kd_turn_right * (error_turn_right - old_error_turn_right));
 	D_control_turn_left  = (int)(Kd_turn_left  * (error_turn_left  - old_error_turn_left));
 	
-	motor_right(P_control_turn_right + D_control_turn_right);
-	motor_left(P_control_turn_left + D_control_turn_left);
+	motor_right(P_control_turn_right+ I_control_turn_right + D_control_turn_right);
+	motor_left(P_control_turn_left  + I_control_turn_left  + D_control_turn_left);
 	
 	//過去の偏差を更新
 	old_error_turn_left  = error_turn_left;
@@ -351,8 +360,10 @@ void turn_right(void)
 
 void turn_left(void)
 {	
-	const float Kp_turn_right = 0.55;
-	const float Kp_turn_left  = 0.58;
+	const float Kp_turn_right = 0.40;
+	const float Kp_turn_left  = 0.60;
+	const float Ki_turn_right = 0;
+	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -361,7 +372,8 @@ void turn_left(void)
 	
 	int P_control_turn_right;
 	int P_control_turn_left;
-	
+	int I_comtrol_turn_right;
+	int I_comtrol_turn_left;
 	int D_control_turn_right;
 	int D_control_turn_left;
 	
@@ -376,14 +388,18 @@ void turn_left(void)
 	error_turn_right = prefer_turn_right - Right_RotaryEncorder_val;
 	error_turn_left  = prefer_turn_left  - Left_RotaryEncorder_val;
 	
+	sum_error_R += error_turn_right;
+	sum_error_L += error_turn_left;
+	
 	P_control_turn_right = (int)(Kp_turn_right * error_turn_right);
 	P_control_turn_left  = (int)(Kp_turn_left  * error_turn_left);
-	
+	I_comtrol_turn_right = (int)(Ki_turn_right * sum_error_R);
+	I_comtrol_turn_left  = (int)(Ki_turn_left  * sum_error_L);
 	D_control_turn_right = (int)(Kd_turn_right * (error_turn_right - old_error_turn_right));
 	D_control_turn_left  = (int)(Kd_turn_left  * (error_turn_left  - old_error_turn_left));
 	
-	motor_right(P_control_turn_right + D_control_turn_right);
-	motor_left(P_control_turn_left + D_control_turn_left);
+	motor_right(P_control_turn_right + I_comtrol_turn_right + D_control_turn_right);
+	motor_left(P_control_turn_left   + I_comtrol_turn_left  + D_control_turn_left);
 	
 	//過去の偏差を更新
 	old_error_turn_left  = error_turn_left;
@@ -447,11 +463,11 @@ void lcd_check(void){
 	lcd_pos(0,11);
 	lcd_number(wall_r, 1);
 	lcd_pos(0,13);
-	lcd_number(loop_count,2);
+	lcd_number(loop_count,3);
 	lcd_pos(1,0);
-	lcd_number(movement_left, 5);
+	lcd_number(abs(error_turn_left), 5);
 	lcd_pos(1,9);
-	lcd_number(movement_right, 5);
+	lcd_number(abs(error_turn_right), 5);
 }
 
 // センサ用割り込み
@@ -646,9 +662,9 @@ void hidarite(void)
 
 int mode_sel_adchi(void)
 {
-	bool wall_r = sensor_distance_R < 90;
-	bool wall_l = sensor_distance_L < 90;
-	bool wall_f = sensor_distance_AVE_LF_RF < 50;
+	bool wall_r = sensor_distance_R < 93;
+	bool wall_l = sensor_distance_L < 93;
+	bool wall_f = sensor_distance_AVE_LF_RF < 55;
 	
 	loop_count++;
 	enum action_t ret = agent_explore();
@@ -688,10 +704,10 @@ void adachi(void)
 		
 		int movement;
 		if(prev_mode == 6) {
-			movement = 535;
+			movement = 540;
 		}
 		else {
-			movement = 580;
+			movement = 560;
 		}
 		
 		while(!(abs(movement_left) >= 10 && abs(movement_right) >= 10 && sensor_distance_AVE_LF_RF <= 60) &&
@@ -710,9 +726,15 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
-		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
+		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 20 && abs(error_turn_right) <= 20)) {
 			lcd_check();
 		}
+		
+		//累積偏差をリセット
+		sum_error_R = 0;
+		sum_error_L = 0;
+		error_turn_right = 0;
+		error_turn_left  = 0;
 		
 		if(need_hips) {
 			mode = 5;
@@ -728,7 +750,7 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 			
-			while(!(abs(movement_left) >= 30 && abs(movement_right) >= 30)) {
+			while(!(abs(movement_left) >= 50 && abs(movement_right) >= 50)) {
 				lcd_check();
 			}
 			
