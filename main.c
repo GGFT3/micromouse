@@ -151,15 +151,11 @@ volatile long int prefer_turn_left  = 0;
 volatile int error_turn_right;
 volatile int error_turn_left;
 
-volatile int turn_select = -1;	// 1なら右回転	-1なら左回転
-
 volatile char hips_flag = 0;
 
 volatile char mode;
 volatile int time_hips;
-volatile char old_mode = 0;
 volatile bool need_hips;
-volatile int masu = 0;
 
 void ave_speed(void)
 {
@@ -549,8 +545,6 @@ void hidarite(void)
 		lcd_check();
 	}
 	
-	masu++;
-	
 	movement_right = 0;
 	movement_left  = 0;
 	
@@ -634,7 +628,7 @@ int mode_sel_adchi(void)
 	bool wall_f = sensor_distance_AVE_LF_RF < 50;
 	
 	loop_count++;
-	enum action_t ret = agent_explore(true);
+	enum action_t ret = agent_explore();
 	loop_count++;
 	
 	if(ret == GO_FORWARD){
@@ -670,7 +664,7 @@ void adachi(void)
 		movement_right = 0;
 		
 		while(!(abs(movement_left) >= 10 && abs(movement_right) >= 10 && sensor_distance_AVE_LF_RF <= 60) &&
-		!(abs(movement_left) >= 600 && abs(movement_right) >= 600)) {
+		!(abs(movement_left) >= 590 && abs(movement_right) >= 590)) {
 			lcd_check();
 		}
 		
@@ -683,6 +677,8 @@ void adachi(void)
 		time_hips = 0;
 		movement_left  = 0;
 		movement_right = 0;
+		
+		
 		
 		while(!(ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
@@ -702,7 +698,7 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 			
-			while(!(abs(movement_left) >= 5 && abs(movement_right) >= 5)) {
+			while(!(abs(movement_left) >= 7 && abs(movement_right) >= 7)) {
 				lcd_check();
 			}
 			
@@ -710,9 +706,8 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 		}
+		mode = 8;
 	}
-	
-	mode = 8;
 }
 
 

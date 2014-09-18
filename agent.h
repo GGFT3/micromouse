@@ -11,8 +11,8 @@
 // 方向は 上:0 左:1 下:2 右:3 で指定
 #define START_DIR 0
 
-#define GOAL_X 2
-#define GOAL_Y 1
+#define GOAL_X 1
+#define GOAL_Y 0
 #define GOAL_W 1
 #define GOAL_H 1
 
@@ -27,8 +27,6 @@ void agent_init(void);
 void agent_learn(void);
 
 // 探索走行のために、次に行うべきアクションを考える
-enum action_t agent_explore(const bool adachi);
-
-void agent_compute_shortest_path(const bool to_start_area);
+enum action_t agent_explore(void);
 
 #endif /* AVR_LCD_H_ */
