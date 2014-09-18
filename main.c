@@ -156,8 +156,8 @@ volatile char hips_flag = 0;
 volatile char mode;
 volatile int time_hips;
 volatile bool need_hips;
-
-volatile int turn_select;	// 1なら右回転	-1なら左回転
+volatile int turn_select;
+volatile int prev_mode;
 
 void ave_speed(void)
 {
@@ -686,14 +686,23 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
+		int movement;
+		if(prev_mode == 6) {
+			movement = 535;
+		}
+		else {
+			movement = 580;
+		}
+		
 		while(!(abs(movement_left) >= 10 && abs(movement_right) >= 10 && sensor_distance_AVE_LF_RF <= 60) &&
-		!(abs(movement_left) >= 580 && abs(movement_right) >= 580)) {
+		!(abs(movement_left) >= movement && abs(movement_right) >= movement)) {
 			lcd_check();
 		}
 		
 		time_hips = 0;
 		movement_left  = 0;
 		movement_right = 0;
+		prev_mode = mode;
 	}
 	
 	if(mode == 2 || mode == 3) {
@@ -719,7 +728,7 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 			
-			while(!(abs(movement_left) >= 8 && abs(movement_right) >= 8)) {
+			while(!(abs(movement_left) >= 30 && abs(movement_right) >= 30)) {
 				lcd_check();
 			}
 			
@@ -727,6 +736,8 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 		}
+		
+		prev_mode = mode;
 	}
 	mode = 8;
 }
@@ -844,6 +855,7 @@ int main(void)
 	beep_end();
 	
 	loop_count = 0;
+	prev_mode = 8;
 	
 	while(1){
 		
