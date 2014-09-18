@@ -157,6 +157,8 @@ volatile char mode;
 volatile int time_hips;
 volatile bool need_hips;
 
+volatile int turn_select;	// 1なら右回転	-1なら左回転
+
 void ave_speed(void)
 {
 	static long int old_pulse_R = 0;
@@ -305,13 +307,11 @@ void speed_down(void)
 }
 
 void turn_right(void)
-{
-	volatile int turn_select = 1;	// 1なら右回転	-1なら左回転
-	
-	const float Kp_turn_right = 0.53;
-	const float Kp_turn_left  = 0.58;
-	const float Kd_turn_right = 0.15;
-	const float Kd_turn_left  = 0.15;
+{	
+	const float Kp_turn_right = 0.55;
+	const float Kp_turn_left  = 0.57;
+	const float Kd_turn_right = 0;
+	const float Kd_turn_left  = 0;
 	
 	static int old_error_turn_right = 0;
 	static int old_error_turn_left = 0;
@@ -322,14 +322,14 @@ void turn_right(void)
 	int D_control_turn_right;
 	int D_control_turn_left;
 	
-	if(prefer_turn_flag == 1){
-		
-		prefer_turn_right = Right_RotaryEncorder_val + (-turn_select * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
-		prefer_turn_left  = Left_RotaryEncorder_val  + (turn_select  * 180);
+	if (prefer_turn_flag)
+	{
+		prefer_turn_right = Right_RotaryEncorder_val + (-1 * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
+		prefer_turn_left  = Left_RotaryEncorder_val  + (1  * 180);
 		
 		prefer_turn_flag = 0;
-		
 	}
+	
 	
 	error_turn_right = prefer_turn_right - Right_RotaryEncorder_val;
 	error_turn_left  = prefer_turn_left  - Left_RotaryEncorder_val;
@@ -350,13 +350,11 @@ void turn_right(void)
 }
 
 void turn_left(void)
-{
-	volatile int turn_select = -1;	// 1なら右回転	-1なら左回転
-	
-	const float Kp_turn_right = 0.48;
-	const float Kp_turn_left  = 0.53;
-	const float Kd_turn_right = 0.15;
-	const float Kd_turn_left  = 0.15;
+{	
+	const float Kp_turn_right = 0.55;
+	const float Kp_turn_left  = 0.58;
+	const float Kd_turn_right = 0;
+	const float Kd_turn_left  = 0;
 	
 	static int old_error_turn_right = 0;
 	static int old_error_turn_left = 0;
@@ -367,13 +365,12 @@ void turn_left(void)
 	int D_control_turn_right;
 	int D_control_turn_left;
 	
-	if(prefer_turn_flag == 1){
-		
-		prefer_turn_right = Right_RotaryEncorder_val + (-turn_select * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
-		prefer_turn_left  = Left_RotaryEncorder_val  + (turn_select  * 180);
+	if (prefer_turn_flag)
+	{
+		prefer_turn_right = Right_RotaryEncorder_val + (1 * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
+		prefer_turn_left  = Left_RotaryEncorder_val  + (-1  * 180);
 		
 		prefer_turn_flag = 0;
-		
 	}
 	
 	error_turn_right = prefer_turn_right - Right_RotaryEncorder_val;
@@ -555,6 +552,17 @@ void hidarite(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
+		if(prefer_turn_flag == 1){
+			
+			turn_select = 1;
+			
+			prefer_turn_right = Right_RotaryEncorder_val + (-turn_select * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
+			prefer_turn_left  = Left_RotaryEncorder_val  + (turn_select  * 180);
+			
+			prefer_turn_flag = 0;
+			
+		}
+		
 		while(!(ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
 		}
@@ -591,6 +599,21 @@ void hidarite(void)
 		time_hips = 0;
 		movement_left  = 0;
 		movement_right = 0;
+			
+		if(prefer_turn_flag == 1){
+				
+			if(mode == 2){
+				turn_select = 1;
+			}
+			if(mode == 3){
+				turn_select = -1;
+			}
+			prefer_turn_right = Right_RotaryEncorder_val + (-turn_select * 180);		//タイヤ間円の円周の1/4がパルスカウントの180と一致する
+			prefer_turn_left  = Left_RotaryEncorder_val  + (turn_select  * 180);
+				
+			prefer_turn_flag = 0;
+				
+		}
 		
 		while(!(ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
@@ -664,7 +687,7 @@ void adachi(void)
 		movement_right = 0;
 		
 		while(!(abs(movement_left) >= 10 && abs(movement_right) >= 10 && sensor_distance_AVE_LF_RF <= 60) &&
-		!(abs(movement_left) >= 590 && abs(movement_right) >= 590)) {
+		!(abs(movement_left) >= 580 && abs(movement_right) >= 580)) {
 			lcd_check();
 		}
 		
@@ -678,9 +701,7 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
-		
-		
-		while(!(ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
+		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
 		}
 		
@@ -698,7 +719,7 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 			
-			while(!(abs(movement_left) >= 7 && abs(movement_right) >= 7)) {
+			while(!(abs(movement_left) >= 8 && abs(movement_right) >= 8)) {
 				lcd_check();
 			}
 			
@@ -706,8 +727,8 @@ void adachi(void)
 			movement_left  = 0;
 			movement_right = 0;
 		}
-		mode = 8;
 	}
+	mode = 8;
 }
 
 
