@@ -103,8 +103,8 @@ volatile float sensor_distance_AVE_LF_RF;
 
 uint8_t sensor_get(void){
 	
-	bool wall_r = sensor_distance_R < 90;
-	bool wall_l = sensor_distance_L < 90;
+	bool wall_r = sensor_distance_R < 89;
+	bool wall_l = sensor_distance_L < 89;
 	bool wall_f = sensor_distance_AVE_LF_RF < 55;
 	
 	uint8_t x = 0;
@@ -255,11 +255,15 @@ void forward(void)
 {
 	//速度の誤差にかけるゲイン
 	const float Kp_velocity_right = 0.07;
-	const float Kp_velocity_left  = 0.092;
+	const float Kp_velocity_left  = 0.088;
 	
 	//左右の移動量の誤差にかけるゲイン
 	const float Kp_movement_right = 0.26;
-	const float Kp_movement_left  = 0.27;
+	const float Kp_movement_left  = 0.28;
+	
+	//壁の距離の誤差
+	const float Kp_wall_right = 0.01;
+	const float Kp_wall_left  = 0.01;
 	
 	//目標パルス速度
 	const int preferrance_pluse_velocity_right = 1100;
@@ -273,6 +277,9 @@ void forward(void)
 	int error_movement_left;
 	int error_movement_right;
 	
+	int error_wall_right;
+	int error_wall_left;
+	
 	//目標パルス速度にするための制御量
 	int control_velocity_right;
 	int control_velocity_left;
@@ -280,6 +287,9 @@ void forward(void)
 	//左右の移動量の誤差に対する制御量
 	int control_movement_right;
 	int control_movement_left;
+	
+	int control_wall_right;
+	int control_wall_left;
 	
 	//左右の速度の誤差
 	error_velocity_left  = preferrance_pluse_velocity_left  - ave_spd_L;
@@ -289,6 +299,9 @@ void forward(void)
 	error_movement_left  = movement_right - movement_left;
 	error_movement_right = movement_left - movement_right;
 	
+	error_wall_right = sensor_distance_L - sensor_distance_R;
+	error_wall_left  = sensor_distance_R - sensor_distance_L;
+	
 	//目標パルス速度にするための制御量
 	control_velocity_right = (int)(Kp_velocity_right * error_velocity_right);
 	control_velocity_left  = (int)(Kp_velocity_left * error_velocity_left);
@@ -297,8 +310,11 @@ void forward(void)
 	control_movement_right = (int)(Kp_movement_right * error_movement_right);
 	control_movement_left  = (int)(Kp_movement_left  * error_movement_left);
 	
-	motor_right(control_velocity_right + control_movement_right);
-	motor_left(control_velocity_left  + control_movement_left);
+	control_wall_right = (int)(Kp_wall_right * error_wall_right);
+	control_wall_left  = (int)(Kp_wall_left  * error_wall_left);
+	
+	motor_right(control_velocity_right + control_movement_right + control_wall_right);
+	motor_left(control_velocity_left  + control_movement_left + control_wall_left);
 	
 }
 
@@ -310,8 +326,8 @@ void speed_down(void)
 
 void turn_right(void)
 {	
-	const float Kp_turn_right = 0.48;
-	const float Kp_turn_left  = 0.59;
+	const float Kp_turn_right = 0.62;
+	const float Kp_turn_left  = 0.60;
 	const float Ki_turn_right = 0;
 	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
@@ -360,8 +376,8 @@ void turn_right(void)
 
 void turn_left(void)
 {	
-	const float Kp_turn_right = 0.40;
-	const float Kp_turn_left  = 0.59;
+	const float Kp_turn_right = 0.55;
+	const float Kp_turn_left  = 0.60;
 	const float Ki_turn_right = 0;
 	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
@@ -409,7 +425,7 @@ void turn_left(void)
 
 void hips(void)
 {
-	motor_left(-45);
+	motor_left(-50);
 	motor_right(-45);
 	time_hips++;
 }
@@ -726,7 +742,7 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
-		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 25 && abs(error_turn_right) <= 25)) {
+		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
 		}
 		
