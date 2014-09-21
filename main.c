@@ -255,7 +255,7 @@ void forward(void)
 {
 	//速度の誤差にかけるゲイン
 	const float Kp_velocity_right = 0.07;
-	const float Kp_velocity_left  = 0.0885;
+	const float Kp_velocity_left  = 0.0883;
 	
 	//左右の移動量の誤差にかけるゲイン
 	const float Kp_movement_right = 0.26;
@@ -326,10 +326,12 @@ void speed_down(void)
 
 void turn_right(void)
 {	
-	const float Kp_turn_right = 0.62;
-	const float Kp_turn_left  = 0.60;
-	const float Ki_turn_right = 0;
-	const float Ki_turn_left  = 0;
+	//const float Kp_turn_right = 0.62;
+	//const float Kp_turn_left  = 0.60;
+	const float Kp_turn_right = 0.434;
+	const float Kp_turn_left  = 0.445;
+	const float Ki_turn_right = 0.003;
+	const float Ki_turn_left  = 0.003;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -376,10 +378,12 @@ void turn_right(void)
 
 void turn_left(void)
 {	
-	const float Kp_turn_right = 0.56;
-	const float Kp_turn_left  = 0.62;
-	const float Ki_turn_right = 0;
-	const float Ki_turn_left  = 0;
+	//const float Kp_turn_right = 0.56;
+	//const float Kp_turn_left  = 0.62;
+	const float Kp_turn_right = 0.43;
+	const float Kp_turn_left  = 0.445;
+	const float Ki_turn_right = 0.003;
+	const float Ki_turn_left  = 0.003;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -742,7 +746,7 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
-		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
+		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 20 && abs(error_turn_right) <= 20)) {
 			lcd_check();
 		}
 		
