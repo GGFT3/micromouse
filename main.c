@@ -103,9 +103,9 @@ volatile float sensor_distance_AVE_LF_RF;
 
 uint8_t sensor_get(void){
 	
-	bool wall_r = sensor_distance_R < 89;
-	bool wall_l = sensor_distance_L < 89;
-	bool wall_f = sensor_distance_AVE_LF_RF < 55;
+	bool wall_r = sensor_distance_R < 90;
+	bool wall_l = sensor_distance_L < 90;
+	bool wall_f = sensor_distance_AVE_LF_RF < 60;
 	
 	uint8_t x = 0;
 	
@@ -255,11 +255,11 @@ void forward(void)
 {
 	//速度の誤差にかけるゲイン
 	const float Kp_velocity_right = 0.07;
-	const float Kp_velocity_left  = 0.088;
+	const float Kp_velocity_left  = 0.0885;
 	
 	//左右の移動量の誤差にかけるゲイン
 	const float Kp_movement_right = 0.26;
-	const float Kp_movement_left  = 0.28;
+	const float Kp_movement_left  = 0.27;
 	
 	//壁の距離の誤差
 	const float Kp_wall_right = 0.01;
@@ -376,8 +376,8 @@ void turn_right(void)
 
 void turn_left(void)
 {	
-	const float Kp_turn_right = 0.55;
-	const float Kp_turn_left  = 0.60;
+	const float Kp_turn_right = 0.56;
+	const float Kp_turn_left  = 0.62;
 	const float Ki_turn_right = 0;
 	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
