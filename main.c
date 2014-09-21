@@ -103,8 +103,8 @@ volatile float sensor_distance_AVE_LF_RF;
 
 uint8_t sensor_get(void){
 	
-	bool wall_r = sensor_distance_R < 90;
-	bool wall_l = sensor_distance_L < 90;
+	bool wall_r = sensor_distance_R < 92;
+	bool wall_l = sensor_distance_L < 92;
 	bool wall_f = sensor_distance_AVE_LF_RF < 60;
 	
 	uint8_t x = 0;
@@ -254,16 +254,16 @@ void forward_hips(void)
 void forward(void)
 {
 	//速度の誤差にかけるゲイン
-	const float Kp_velocity_right = 0.07;
-	const float Kp_velocity_left  = 0.0883;
+	const float Kp_velocity_right = 0.073;
+	const float Kp_velocity_left  = 0.0881;
 	
 	//左右の移動量の誤差にかけるゲイン
 	const float Kp_movement_right = 0.26;
-	const float Kp_movement_left  = 0.27;
+	const float Kp_movement_left  = 0.261;
 	
 	//壁の距離の誤差
-	const float Kp_wall_right = 0.01;
-	const float Kp_wall_left  = 0.01;
+	const float Kp_wall_right = 0.08;
+	const float Kp_wall_left  = 0.08;
 	
 	//目標パルス速度
 	const int preferrance_pluse_velocity_right = 1100;
@@ -326,12 +326,14 @@ void speed_down(void)
 
 void turn_right(void)
 {	
-	//const float Kp_turn_right = 0.62;
-	//const float Kp_turn_left  = 0.60;
-	const float Kp_turn_right = 0.434;
-	const float Kp_turn_left  = 0.445;
-	const float Ki_turn_right = 0.003;
-	const float Ki_turn_left  = 0.003;
+	const float Kp_turn_right = 0.59;
+	const float Kp_turn_left  = 0.60;
+	//const float Kp_turn_right = 0.434;
+	//const float Kp_turn_left  = 0.445;
+	//const float Ki_turn_right = 0.003;
+	//const float Ki_turn_left  = 0.003;
+	const float Ki_turn_right = 0;
+	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -378,12 +380,14 @@ void turn_right(void)
 
 void turn_left(void)
 {	
-	//const float Kp_turn_right = 0.56;
-	//const float Kp_turn_left  = 0.62;
-	const float Kp_turn_right = 0.43;
-	const float Kp_turn_left  = 0.445;
-	const float Ki_turn_right = 0.003;
-	const float Ki_turn_left  = 0.003;
+	const float Kp_turn_right = 0.56;
+	const float Kp_turn_left  = 0.62;
+	//const float Kp_turn_right = 0.43;
+	//const float Kp_turn_left  = 0.445;
+	//const float Ki_turn_right = 0.003;
+	//const float Ki_turn_left  = 0.003;
+	const float Ki_turn_right = 0;
+	const float Ki_turn_left  = 0;
 	const float Kd_turn_right = 0;
 	const float Kd_turn_left  = 0;
 	
@@ -746,7 +750,7 @@ void adachi(void)
 		movement_left  = 0;
 		movement_right = 0;
 		
-		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 20 && abs(error_turn_right) <= 20)) {
+		while(!(prefer_turn_flag == 0 && ave_spd_L == 0 && ave_spd_R == 0 && abs(error_turn_left) <= 35 && abs(error_turn_right) <= 35)) {
 			lcd_check();
 		}
 		
